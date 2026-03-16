@@ -8,6 +8,8 @@ from electrum.transaction import PartialTransaction
 
 from .silent_payments import SilentPaymentEngine
 from .transaction_utils import is_silent_payment_output, calculate_integrity_hash
+from PyQt6.QtWidgets import QVBoxLayout, QLabel, QComboBox, QDialog, QDialogButtonBox
+from electrum.gui.qt.util import WindowModalDialog, Buttons, CloseButton
 
 if TYPE_CHECKING:
     from electrum.gui.qt.main_window import ElectrumWindow
@@ -82,3 +84,38 @@ class Plugin(BasePlugin):
                 'type': 'sp',
                 'label': _("Privacy-Enhanced Output")
             }
+
+def requires_settings(self):
+        return True
+
+    def settings_dialog(self, window):
+        d = WindowModalDialog(window, _("Silent Payments Settings"))
+        layout = QVBoxLayout(d)
+
+        layout.addWidget(QLabel(_("Select Indexing Server:")))
+        
+        # Prefill the dropdown
+        self.server_combo = QComboBox()
+        servers = [
+            "electrs.cakewallet.com:50001",
+            "sp.bitaroo.net:50001",
+            "localhost:50001 (Local Indexer)"
+        ]
+        self.server_combo.addItems(servers)
+        
+        # Set current selection from config
+        current_server = self.config.get('sp_index_server', servers[0])
+        index = self.server_combo.findText(current_server)
+        if index >= 0:
+            self.server_combo.setCurrentIndex(index)
+            
+        layout.addWidget(self.server_combo)
+        layout.addStretch()
+
+        layout.addLayout(Buttons(Buttons.CANCEL, Buttons.OK))
+        if d.exec():
+            new_server = self.server_combo.currentText()
+            self.config.set_key('sp_index_server', new_server)
+            # Notify the scanner to reconnect
+            if hasattr(self, 'scanner'):
+                self.scanner.reconnect(new_server)
