@@ -27,8 +27,12 @@ jobs:
       - name: Set up plugin in Electrum
         run: |
           mkdir -p electrum_repo/plugins/silent_payments
-          cp -r ./* electrum_repo/plugins/silent_payments/
-          # Remove .git and .github from copied files
+          # Copy only the plugin files, excluding .git, .github, and electrum_repo
+          for item in *; do
+            if [ "$item" != "electrum_repo" ]; then
+              cp -r "$item" electrum_repo/plugins/silent_payments/ 2>/dev/null || true
+            fi
+          done
           rm -rf electrum_repo/plugins/silent_payments/.git
           rm -rf electrum_repo/plugins/silent_payments/.github
           
