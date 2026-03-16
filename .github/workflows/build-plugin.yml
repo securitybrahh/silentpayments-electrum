@@ -1,0 +1,45 @@
+name: Build Plugin
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout plugin
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+        
+      - name: Clone Electrum
+        run: |
+          git clone --depth 1 https://github.com/spesmilo/electrum.git electrum_repo
+          
+      - name: Set up plugin in Electrum
+        run: |
+          mkdir -p electrum_repo/plugins/silent_payments
+          cp -r ./* electrum_repo/plugins/silent_payments/
+          # Remove .git and .github from copied files
+          rm -rf electrum_repo/plugins/silent_payments/.git
+          rm -rf electrum_repo/plugins/silent_payments/.github
+          
+      - name: Build plugin
+        run: |
+          cd electrum_repo
+          python .contrib/make_plugin plugins/silent_payments
+          
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: silent_payments_plugin
+          path: electrum_repo/*.zip
+          retention-days: 30
