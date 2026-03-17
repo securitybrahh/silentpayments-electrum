@@ -7,3 +7,5 @@ Taking https://github.com/spesmilo/electrum/pull/9900 as inspiration
 The index server as https://github.com/cake-tech/blockstream-electrs/tree/cake-update-v1
 
 server spec as https://github.com/silent-payments/BIP0352-index-server-specification/blob/main/README.md
+
+Icon taken from https://github.com/cake-tech/cake_wallet/blob/dev/res/pictures/address-type-picker-icons/silent.svg
